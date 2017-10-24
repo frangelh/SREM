@@ -3,6 +3,8 @@ package xyz.somniumproject.srem
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.text.Editable
+import android.text.TextWatcher
 import android.widget.ArrayAdapter
 import android.widget.TabHost
 import com.github.kittinunf.fuel.Fuel
@@ -13,8 +15,11 @@ import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import xyz.somniumproject.srem.encapsulaciones.ListaParticipante
+import xyz.somniumproject.srem.encapsulaciones.Participante
 
 class MainActivity : AppCompatActivity() {
+    var listadoPendiente: List<Participante> = ArrayList()
+    var listadoProcesado: List<Participante> = ArrayList()
 
     val urlListar = "http://www.somniumproject.xyz/SRE/listar.php"
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,7 +38,57 @@ class MainActivity : AppCompatActivity() {
 
         //inicializando coroutina
         actualizar()
+        txt_filtro_pendientes.addTextChangedListener(object : TextWatcher {
 
+            override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
+
+            }
+
+            override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
+
+            }
+
+            override fun afterTextChanged(editable: Editable) {
+                val valores = ArrayList<String>()
+                val adapter: ArrayAdapter<String>
+                listadoPendiente.filter {
+                    it.nombres.contains(txt_filtro_pendientes.text.toString(),true) ||
+                            it.apellidos.contains(txt_filtro_pendientes.text.toString(),true) ||
+                            it.codigo.contains(txt_filtro_pendientes.text.toString(),true)
+                }.mapTo(valores) { it.nombres + " " + it.apellidos + " - " + it.categoria }
+                adapter = ArrayAdapter(baseContext, android.R.layout.simple_list_item_1, android.R.id.text1, valores)
+                lista_pendientes.adapter = adapter
+
+            }
+
+
+        })
+
+        txt_filtro_procesados.addTextChangedListener(object : TextWatcher {
+
+            override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
+
+            }
+
+            override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
+
+            }
+
+            override fun afterTextChanged(editable: Editable) {
+                val valores = ArrayList<String>()
+                val adapter: ArrayAdapter<String>
+                listadoProcesado.filter {
+                    it.nombres.contains(txt_filtro_procesados.text.toString(),true) ||
+                            it.apellidos.contains(txt_filtro_procesados.text.toString(),true) ||
+                            it.codigo.contains(txt_filtro_procesados.text.toString(),true)
+                }.mapTo(valores) { it.nombres + " " + it.apellidos + " - " + it.categoria }
+                adapter = ArrayAdapter(baseContext, android.R.layout.simple_list_item_1, android.R.id.text1, valores)
+                lista_pendientes.adapter = adapter
+
+            }
+
+
+        })
 
 
         btn_escanear.setOnClickListener {
@@ -48,7 +103,7 @@ class MainActivity : AppCompatActivity() {
     fun actualizar() {
         launch(CommonPool) {
             while (true) {
-                delay(10000)
+
                 Fuel.get(urlListar, listOf("registrado" to "0")).responseObject(ListaParticipante.Deserializer()) { req, res, result ->
                     when (result) {
                         is Result.Failure -> println(result)
@@ -58,7 +113,8 @@ class MainActivity : AppCompatActivity() {
                                 val valores = ArrayList<String>()
                                 val adapter: ArrayAdapter<String>
                                 if (!retorno.listado[0].error) {
-                                    retorno.listado.mapTo(valores) { it.nombres + " " + it.apellidos + " - " + it.categoria }
+                                    listadoPendiente = retorno.listado
+                                    listadoPendiente.mapTo(valores) { it.nombres + " " + it.apellidos + " - " + it.categoria }
                                     adapter = ArrayAdapter(baseContext, android.R.layout.simple_list_item_1, android.R.id.text1, valores)
                                     lista_pendientes.adapter = adapter
 
@@ -78,7 +134,8 @@ class MainActivity : AppCompatActivity() {
                                 val valores = ArrayList<String>()
                                 val adapter: ArrayAdapter<String>
                                 if (!retorno.listado[0].error) {
-                                    retorno.listado.mapTo(valores) { it.nombres + " " + it.apellidos + " - " + it.categoria }
+                                    listadoProcesado = retorno.listado
+                                    listadoProcesado.mapTo(valores) { it.nombres + " " + it.apellidos + " - " + it.categoria }
                                     adapter = ArrayAdapter(baseContext, android.R.layout.simple_list_item_1, android.R.id.text1, valores)
                                     lista_procesados.adapter = adapter
 
@@ -89,6 +146,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
+                delay(10000)
             }
         }
     }
