@@ -36,9 +36,15 @@ dependencies {
     })
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     //libreria para REST
-    compile 'com.github.kittinunf.fuel:fuel-android:1.11.0' //for Android
-    compile 'com.github.kittinunf.fuel:fuel-gson:1.11.0' //for Gson support
+    compile 'com.github.kittinunf.fuel:fuel-android:1.7.0' //for Android
+    compile 'com.google.code.gson:gson:2.8.0'
     //libreria para QR
     compile 'me.dm7.barcodescanner:zxing:1.8.4'
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.2'
 
+}
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
 }
