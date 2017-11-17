@@ -3,6 +3,7 @@ package xyz.somniumproject.srem
 import android.app.AlertDialog
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.widget.Button
 import android.widget.Toast
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.result.getAs
@@ -41,6 +42,7 @@ class LectorBarras : AppCompatActivity(), ZXingScannerView.ResultHandler {
 
         //0000000010|Juan|Beato|03400466945|lbeato@pucmm.edu.do|Participante|Depósito o transferencia bancaria
         val codigo: String = r.text//r.text.split("|")[0]
+        println("LOG:"+codigo)
         //Procesar el codigo
         Fuel.get(urlConsultar, listOf("codigo" to codigo)).responseObject(RetornoParticipante.Deserializer()) { req, res, result ->
             when (result) {
@@ -51,7 +53,7 @@ class LectorBarras : AppCompatActivity(), ZXingScannerView.ResultHandler {
                         if (!retorno.participante.error && retorno.participante.registrado == 0) {
                             val alert = AlertDialog.Builder(this@LectorBarras).create()
                             alert.setTitle("ALERTA...")
-                            alert.setMessage("La entrada # $codigo puede ser procesada...")
+                            alert.setMessage("El codigo: #$codigo puede ser procesado...")
                             alert.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", { dialogInterface, i ->
                                 Fuel.get(urlActualizar, listOf("codigo" to codigo)).responseObject(RetornoProcesar.Deserializer()) { req, res, result ->
                                     when (result) {
@@ -75,7 +77,7 @@ class LectorBarras : AppCompatActivity(), ZXingScannerView.ResultHandler {
                         } else {
                             val alert = AlertDialog.Builder(this@LectorBarras).create()
                             alert.setTitle("ALERTA...")
-                            alert.setMessage("Este codigo no puede ser procesado...")
+                            alert.setMessage("El codigo: #$codigo no puede ser procesado...")
                             alert.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", { dialogInterface, i ->
                                 finish()
                             })

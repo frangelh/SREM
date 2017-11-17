@@ -5,8 +5,11 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TabHost
+import android.widget.Toast
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.getAs
@@ -16,11 +19,12 @@ import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import xyz.somniumproject.srem.encapsulaciones.ListaParticipante
 import xyz.somniumproject.srem.encapsulaciones.Participante
+import xyz.somniumproject.srem.encapsulaciones.RetornoProcesar
 
 class MainActivity : AppCompatActivity() {
     var listadoPendiente: List<Participante> = ArrayList()
     var listadoProcesado: List<Participante> = ArrayList()
-
+    val urlActualizar = "http://www.somniumproject.xyz/SRE/actualizar.php"
     val urlListar = "http://www.somniumproject.xyz/SRE/listar.php"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +59,7 @@ class MainActivity : AppCompatActivity() {
                     it.nombres.contains(txt_filtro_pendientes.text.toString(), true) ||
                             it.apellidos.contains(txt_filtro_pendientes.text.toString(), true) ||
                             it.codigo.contains(txt_filtro_pendientes.text.toString(), true)
-                }.mapTo(valores) { it.nombres + " " + it.apellidos + " - " + it.categoria }
+                }.mapTo(valores) { it.codigo + " - " + it.nombres + " " + it.apellidos + " - " + it.categoria }
                 adapter = ArrayAdapter(baseContext, android.R.layout.simple_list_item_1, android.R.id.text1, valores)
                 lista_pendientes.adapter = adapter
 
@@ -81,7 +85,7 @@ class MainActivity : AppCompatActivity() {
                     it.nombres.contains(txt_filtro_procesados.text.toString(), true) ||
                             it.apellidos.contains(txt_filtro_procesados.text.toString(), true) ||
                             it.codigo.contains(txt_filtro_procesados.text.toString(), true)
-                }.mapTo(valores) { it.nombres + " " + it.apellidos + " - " + it.categoria }
+                }.mapTo(valores) { it.codigo + " - " + it.nombres + " " + it.apellidos + " - " + it.categoria }
                 adapter = ArrayAdapter(baseContext, android.R.layout.simple_list_item_1, android.R.id.text1, valores)
                 lista_pendientes.adapter = adapter
 
@@ -97,13 +101,33 @@ class MainActivity : AppCompatActivity() {
             myIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             baseContext.startActivity(myIntent)
         }
+        lista_pendientes.onItemLongClickListener = AdapterView.OnItemLongClickListener { _, _, i, _ ->
+            val codigo = listadoPendiente[i].codigo
+            Fuel.get(urlActualizar, listOf("codigo" to codigo)).responseObject(RetornoProcesar.Deserializer()) { req, res, result ->
+                when (result) {
+                    is com.github.kittinunf.result.Result.Failure -> {
+                        Toast.makeText(baseContext, "Hubo un Error del servidor", Toast.LENGTH_LONG).show()
+                    }
+                    is com.github.kittinunf.result.Result.Success -> {
+                        val retornoProcesar: RetornoProcesar? = result.getAs()
+                        if (retornoProcesar != null) {
+                            if (!retornoProcesar.error) {
+                                Toast.makeText(baseContext, retornoProcesar.mensaje, Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                }
+            }
+            true
+        }
+
+
     }
 
 
     fun actualizar() {
         launch(CommonPool) {
             while (true) {
-
                 Fuel.get(urlListar, listOf("registrado" to "0")).responseObject(ListaParticipante.Deserializer()) { req, res, result ->
                     when (result) {
                         is Result.Failure -> println(result)
@@ -114,7 +138,7 @@ class MainActivity : AppCompatActivity() {
                                 val adapter: ArrayAdapter<String>
                                 if (!retorno.listado[0].error) {
                                     listadoPendiente = retorno.listado
-                                    listadoPendiente.mapTo(valores) { it.nombres + " " + it.apellidos + " - " + it.categoria }
+                                    listadoPendiente.mapTo(valores) { it.codigo + " - " + it.nombres + " " + it.apellidos + " - " + it.categoria }
                                     adapter = ArrayAdapter(baseContext, android.R.layout.simple_list_item_1, android.R.id.text1, valores)
                                     lista_pendientes.adapter = adapter
 
@@ -135,7 +159,7 @@ class MainActivity : AppCompatActivity() {
                                 val adapter: ArrayAdapter<String>
                                 if (!retorno.listado[0].error) {
                                     listadoProcesado = retorno.listado
-                                    listadoProcesado.mapTo(valores) { it.nombres + " " + it.apellidos + " - " + it.categoria }
+                                    listadoProcesado.mapTo(valores) { it.codigo + " - " + it.nombres + " " + it.apellidos + " - " + it.categoria }
                                     adapter = ArrayAdapter(baseContext, android.R.layout.simple_list_item_1, android.R.id.text1, valores)
                                     lista_procesados.adapter = adapter
 
@@ -146,7 +170,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
-                delay(10000)
+                delay(1000)
             }
         }
     }
