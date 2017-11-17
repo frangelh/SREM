@@ -40,7 +40,7 @@ class LectorBarras : AppCompatActivity(), ZXingScannerView.ResultHandler {
     override fun handleResult(r: Result) {
 
         //0000000010|Juan|Beato|03400466945|lbeato@pucmm.edu.do|Participante|Depósito o transferencia bancaria
-        val codigo: String = r.text.split("|")[0]
+        val codigo: String = r.text//r.text.split("|")[0]
         //Procesar el codigo
         Fuel.get(urlConsultar, listOf("codigo" to codigo)).responseObject(RetornoParticipante.Deserializer()) { req, res, result ->
             when (result) {

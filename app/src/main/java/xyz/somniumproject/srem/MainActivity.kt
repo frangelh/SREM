@@ -52,9 +52,9 @@ class MainActivity : AppCompatActivity() {
                 val valores = ArrayList<String>()
                 val adapter: ArrayAdapter<String>
                 listadoPendiente.filter {
-                    it.nombres.contains(txt_filtro_pendientes.text.toString(),true) ||
-                            it.apellidos.contains(txt_filtro_pendientes.text.toString(),true) ||
-                            it.codigo.contains(txt_filtro_pendientes.text.toString(),true)
+                    it.nombres.contains(txt_filtro_pendientes.text.toString(), true) ||
+                            it.apellidos.contains(txt_filtro_pendientes.text.toString(), true) ||
+                            it.codigo.contains(txt_filtro_pendientes.text.toString(), true)
                 }.mapTo(valores) { it.nombres + " " + it.apellidos + " - " + it.categoria }
                 adapter = ArrayAdapter(baseContext, android.R.layout.simple_list_item_1, android.R.id.text1, valores)
                 lista_pendientes.adapter = adapter
@@ -78,9 +78,9 @@ class MainActivity : AppCompatActivity() {
                 val valores = ArrayList<String>()
                 val adapter: ArrayAdapter<String>
                 listadoProcesado.filter {
-                    it.nombres.contains(txt_filtro_procesados.text.toString(),true) ||
-                            it.apellidos.contains(txt_filtro_procesados.text.toString(),true) ||
-                            it.codigo.contains(txt_filtro_procesados.text.toString(),true)
+                    it.nombres.contains(txt_filtro_procesados.text.toString(), true) ||
+                            it.apellidos.contains(txt_filtro_procesados.text.toString(), true) ||
+                            it.codigo.contains(txt_filtro_procesados.text.toString(), true)
                 }.mapTo(valores) { it.nombres + " " + it.apellidos + " - " + it.categoria }
                 adapter = ArrayAdapter(baseContext, android.R.layout.simple_list_item_1, android.R.id.text1, valores)
                 lista_pendientes.adapter = adapter
